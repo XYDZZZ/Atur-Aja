@@ -2,6 +2,7 @@
 
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
+const ws = require('ws');
 
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
   console.error('❌ SUPABASE_URL atau SUPABASE_SERVICE_ROLE_KEY tidak ditemukan di .env');
@@ -15,6 +16,12 @@ const supabase = createClient(
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    // Bot tidak memakai realtime subscription, tapi Supabase client
+    // tetap menginisialisasi RealtimeClient yang butuh WebSocket polyfill
+    // di Node.js < 22 (Node tidak punya global WebSocket sebelum v22)
+    realtime: {
+      transport: ws,
     },
   }
 );
