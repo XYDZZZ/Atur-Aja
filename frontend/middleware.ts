@@ -1,5 +1,5 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -12,17 +12,23 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(
+          cookiesToSet: {
+            name: string;
+            value: string;
+            options: CookieOptions;
+          }[],
+        ) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   const {
@@ -33,26 +39,25 @@ export async function middleware(request: NextRequest) {
 
   // Rute yang selalu boleh diakses tanpa cek login
   const PUBLIC_PATHS = [
-    '/login',
-    '/register',
-    '/forgot-password',
-    '/auth/callback',   // ← Supabase email confirmation & OAuth callback
-    '/reset-password',  // ← Halaman set password baru dari link email
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/auth/callback",
+    "/reset-password",
   ];
 
   const isPublicPath = PUBLIC_PATHS.some((p) => pathname.startsWith(p));
 
   // Belum login, akses halaman terproteksi → redirect ke login
   if (!user && !isPublicPath) {
-    return NextResponse.redirect(new URL('/login', request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   // Sudah login, akses halaman auth biasa → redirect ke dashboard
-  // (kecuali /auth/callback dan /reset-password yang perlu diproses dulu)
-  const AUTH_ONLY_PATHS = ['/login', '/register', '/forgot-password'];
+  const AUTH_ONLY_PATHS = ["/login", "/register", "/forgot-password"];
   const isAuthPath = AUTH_ONLY_PATHS.some((p) => pathname.startsWith(p));
   if (user && isAuthPath) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return supabaseResponse;
@@ -60,6 +65,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|ico|webp|css|js)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|ico|webp|css|js)$).*)",
   ],
 };
