@@ -6,6 +6,7 @@ FROM node:20-slim
 
 # Install Chromium & dependencies yang dibutuhkan whatsapp-web.js
 RUN apt-get update && apt-get install -y \
+    ca-certificates \
     chromium \
     fonts-freefont-ttf \
     libnss3 \
@@ -14,7 +15,8 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     libgbm1 \
     --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
 
 # Beritahu Puppeteer untuk skip download Chromium-nya sendiri
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
