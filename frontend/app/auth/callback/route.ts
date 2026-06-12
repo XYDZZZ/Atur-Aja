@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { NextResponse } from "next/server";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 /**
  * Route ini wajib ada agar:
@@ -10,15 +10,15 @@ import { cookies } from 'next/headers';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
 
-  const code  = searchParams.get('code');
-  const next  = searchParams.get('next') ?? '/dashboard';
-  const error = searchParams.get('error');
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/dashboard";
+  const error = searchParams.get("error");
 
   // Tampilkan error dari Supabase jika ada
   if (error) {
-    const desc = searchParams.get('error_description') ?? 'Unknown error';
+    const desc = searchParams.get("error_description") ?? "Unknown error";
     return NextResponse.redirect(
-      `${origin}/login?error=${encodeURIComponent(desc)}`
+      `${origin}/login?error=${encodeURIComponent(desc)}`,
     );
   }
 
@@ -30,17 +30,26 @@ export async function GET(request: Request) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll(cookiesToSet) {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(
+            cookiesToSet: {
+              name: string;
+              value: string;
+              options: CookieOptions;
+            }[],
+          ) {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           },
         },
-      }
+      },
     );
 
-    const { error: exchangeErr } = await supabase.auth.exchangeCodeForSession(code);
+    const { error: exchangeErr } =
+      await supabase.auth.exchangeCodeForSession(code);
 
     if (!exchangeErr) {
       return NextResponse.redirect(`${origin}${next}`);
