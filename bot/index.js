@@ -42,6 +42,13 @@ client.on('qr', (qr) => {
   console.log('╚══════════════════════════════════════╝\n');
   qrcode.generate(qr, { small: true });
   console.log('\nBuka WhatsApp → Perangkat Tertaut → Tautkan Perangkat\n');
+
+  // ── Fallback untuk Railway/log viewer yang memotong ASCII QR ──
+  // Buka link ini di browser untuk lihat QR sebagai gambar
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
+  console.log('📱 Jika QR di atas rusak/terpotong, buka link ini di browser:');
+  console.log(qrImageUrl);
+  console.log('');
 });
 
 client.on('loading_screen', (percent, message) => {
