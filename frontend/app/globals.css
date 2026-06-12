@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ──────────────────────────────────────────────────
+   Design Tokens — Dark (default)
+────────────────────────────────────────────────── */
+:root {
+  --bg-base:     #07080E;
+  --bg-card:     #0E1018;
+  --bg-elevated: #13151F;
+  --bg-hover:    #181B28;
+
+  --border-subtle:  #181B28;
+  --border-default: #1E2235;
+  --border-strong:  #28304A;
+
+  --text-primary:   #E0E4F0;
+  --text-secondary: #8B93B4;
+  --text-muted:     #4A5076;
+
+  --accent:         #7C6FF7;
+  --accent-hover:   #8D80FF;
+  --accent-glow:    rgba(124, 111, 247, 0.25);
+  --accent-subtle:  rgba(124, 111, 247, 0.12);
+}
+
+/* ──────────────────────────────────────────────────
+   Design Tokens — Light
+────────────────────────────────────────────────── */
+.theme-light {
+  --bg-base:     #F0F2F9;
+  --bg-card:     #FFFFFF;
+  --bg-elevated: #F6F8FF;
+  --bg-hover:    #EDF0FF;
+
+  --border-subtle:  #E8EDF7;
+  --border-default: #DDE3F2;
+  --border-strong:  #C4CDEB;
+
+  --text-primary:   #141728;
+  --text-secondary: #4A5276;
+  --text-muted:     #8B93B4;
+
+  --accent:        #6C63FF;
+  --accent-hover:  #7C73FF;
+  --accent-glow:   rgba(108, 99, 255, 0.2);
+  --accent-subtle: rgba(108, 99, 255, 0.08);
+}
+
+/* ──────────────────────────────────────────────────
+   Base
+────────────────────────────────────────────────── */
+*   { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Subtle grain overlay for depth */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.018;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 200px;
+}
+
+/* ──────────────────────────────────────────────────
+   Scrollbar
+────────────────────────────────────────────────── */
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: var(--border-default); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
+
+/* ──────────────────────────────────────────────────
+   Component utilities
+────────────────────────────────────────────────── */
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+}
+
+.auth-gradient {
+  background:
+    radial-gradient(ellipse 60% 60% at 15% 20%,  rgba(124,111,247,0.10) 0%, transparent 65%),
+    radial-gradient(ellipse 45% 45% at 85% 80%,  rgba(34,211,238,0.07) 0%, transparent 65%),
+    var(--bg-base);
+}
+
+.task-card-hover:hover {
+  background: var(--bg-hover) !important;
+  border-color: var(--border-strong) !important;
+}
+
+/* ──────────────────────────────────────────────────
+   Animations
+────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0);     }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px);  }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.animate-fade-in-up   { animation: fadeInUp   0.35s ease forwards; }
+.animate-slide-in-left { animation: slideInLeft 0.3s  ease forwards; }
+.animate-float         { animation: float      4s    ease-in-out infinite; }
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-card) 25%,
+    var(--bg-elevated) 50%,
+    var(--bg-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* datetime-local color fix dark mode */
+input[type="datetime-local"],
+input[type="date"] {
+  color-scheme: dark;
+}
+.theme-light input[type="datetime-local"],
+.theme-light input[type="date"] {
+  color-scheme: light;
+}

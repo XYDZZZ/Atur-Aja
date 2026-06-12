@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment variables — JANGAN PERNAH COMMIT FILE INI!
+.env
+.env.local
+
+# Sesi WhatsApp tersimpan di sini — jangan di-commit!
+# (berisi data autentikasi WA yang sensitif)
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Debug logs
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
