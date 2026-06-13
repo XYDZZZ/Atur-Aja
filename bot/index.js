@@ -63,10 +63,11 @@ const client = new Client({
       '--disable-dev-shm-usage',
       '--disable-accelerated-2d-canvas',
       '--no-first-run',
-      '--no-zygote',
-      '--single-process',        // diperlukan di banyak VPS Linux
       '--disable-gpu',
-      // ── Hemat memori (penting untuk Railway free tier ~512MB) ──
+      // ── Hemat memori (penting untuk Railway free tier) ──
+      // CATATAN: --single-process & --no-zygote SENGAJA TIDAK dipakai
+      // karena menyebabkan error "Attempted to use detached Frame"
+      // setelah browser idle beberapa saat (bug dikenal di whatsapp-web.js).
       '--disable-extensions',
       '--disable-background-networking',
       '--disable-background-timer-throttling',
@@ -76,9 +77,7 @@ const client = new Client({
       '--disable-features=TranslateUI,BlinkGenPropertyTrees',
       '--disable-ipc-flooding-protection',
       '--disable-renderer-backgrounding',
-      '--enable-features=NetworkServiceInProcess2',
       '--memory-pressure-off',
-      '--js-flags=--max-old-space-size=128',
     ],
   },
 });
