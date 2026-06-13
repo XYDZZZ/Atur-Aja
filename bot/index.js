@@ -2,6 +2,12 @@
 
 require('dotenv').config();
 
+// ── Fix "fetch failed" di Railway/Docker ──
+// Banyak environment container hanya support IPv4, tapi Node 20 default
+// mencoba IPv6 dulu untuk DNS lookup, menyebabkan undici fetch gagal.
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode  = require('qrcode-terminal');
 const { startScheduler } = require('./scheduler');
