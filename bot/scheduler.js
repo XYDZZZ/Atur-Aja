@@ -106,6 +106,11 @@ async function checkAndSendAlarms(client) {
 
     if (error) {
       console.error('[Scheduler] DB error:', error.message);
+      if (error.cause) {
+        console.error('[Scheduler] Cause:', error.cause?.message || error.cause);
+        console.error('[Scheduler] Cause code:', error.cause?.code);
+        console.error('[Scheduler] Full cause:', JSON.stringify(error.cause, Object.getOwnPropertyNames(error.cause)));
+      }
       return;
     }
 
