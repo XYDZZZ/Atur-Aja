@@ -10,7 +10,39 @@ dns.setDefaultResultOrder('ipv4first');
 
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode  = require('qrcode-terminal');
+const fs      = require('fs');
+const path    = require('path');
 const { startScheduler } = require('./scheduler');
+
+// ── Fix "profile in use" error setelah volume remount ──
+// Chromium meninggalkan file lock (SingletonLock dll) jika container
+// dimatikan secara paksa. File ini menyebabkan Chromium baru menolak
+// start karena mengira profile masih dipakai proses lain.
+function cleanupChromiumLocks() {
+  const authDir = path.join(__dirname, '.wwebjs_auth');
+  const lockFiles = ['SingletonLock', 'SingletonCookie', 'SingletonSocket'];
+
+  function removeLocksRecursive(dir) {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        removeLocksRecursive(fullPath);
+      } else if (lockFiles.includes(entry.name)) {
+        try {
+          fs.unlinkSync(fullPath);
+          console.log(`🧹 Removed stale lock: ${fullPath}`);
+        } catch (err) {
+          console.warn(`⚠️  Failed to remove ${fullPath}:`, err.message);
+        }
+      }
+    }
+  }
+
+  removeLocksRecursive(authDir);
+}
+
+cleanupChromiumLocks();
 
 // ─────────────────────────────────────────────────
 //  Inisialisasi Client
