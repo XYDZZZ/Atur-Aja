@@ -54,6 +54,10 @@ const client = new Client({
   }),
   puppeteer: {
     headless: true,
+    // Naikkan timeout protokol CDP — default 180s kadang kurang saat
+    // memori terbatas membuat Chromium lambat merespons (menyebabkan
+    // error "Runtime.callFunctionOn timed out")
+    protocolTimeout: 180_000,
     // Di Docker/Railway, executablePath diset via env PUPPETEER_EXECUTABLE_PATH
     // Di lokal (tanpa env ini), Puppeteer pakai Chromium bawaannya sendiri
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
