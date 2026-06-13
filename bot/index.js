@@ -66,6 +66,19 @@ const client = new Client({
       '--no-zygote',
       '--single-process',        // diperlukan di banyak VPS Linux
       '--disable-gpu',
+      // ── Hemat memori (penting untuk Railway free tier ~512MB) ──
+      '--disable-extensions',
+      '--disable-background-networking',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-breakpad',
+      '--disable-component-extensions-with-background-pages',
+      '--disable-features=TranslateUI,BlinkGenPropertyTrees',
+      '--disable-ipc-flooding-protection',
+      '--disable-renderer-backgrounding',
+      '--enable-features=NetworkServiceInProcess2',
+      '--memory-pressure-off',
+      '--js-flags=--max-old-space-size=128',
     ],
   },
 });
