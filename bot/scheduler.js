@@ -85,9 +85,15 @@ function buildMessage(task, userName) {
 }
 
 // ─────────────────────────────────────────────────
+//  Watchdog state — restart client jika gagal terus
+// ─────────────────────────────────────────────────
+let consecutiveFailures = 0;
+const MAX_FAILURES_BEFORE_RESTART = 2;
+
+// ─────────────────────────────────────────────────
 //  Cek database & kirim alarm
 // ─────────────────────────────────────────────────
-async function checkAndSendAlarms(client) {
+async function checkAndSendAlarms(client, onUnresponsive) {
   try {
     const now = new Date().toISOString();
 
@@ -131,6 +137,7 @@ async function checkAndSendAlarms(client) {
 
         await client.sendMessage(waNumber, message);
         console.log(`[Scheduler] ✅ Sent alarm → ${user.wa_number}  | "${task.title}"`);
+        consecutiveFailures = 0; // reset watchdog counter on success
 
         // Tandai alarm sudah terkirim
         const { error: updateErr } = await supabase
@@ -150,6 +157,27 @@ async function checkAndSendAlarms(client) {
           `[Scheduler] ❌ Failed to send to ${user.wa_number} for task "${task.title}":`,
           sendErr.message
         );
+
+        // ── Watchdog: deteksi Chromium "hang" ──
+        const isTimeoutError =
+          sendErr.message?.includes('timed out') ||
+          sendErr.message?.includes('detached Frame') ||
+          sendErr.message?.includes('Target closed') ||
+          sendErr.message?.includes('Protocol error');
+
+        if (isTimeoutError) {
+          consecutiveFailures++;
+          console.warn(`[Scheduler] ⚠️  Consecutive failures: ${consecutiveFailures}/${MAX_FAILURES_BEFORE_RESTART}`);
+
+          if (consecutiveFailures >= MAX_FAILURES_BEFORE_RESTART) {
+            consecutiveFailures = 0;
+            if (typeof onUnresponsive === 'function') {
+              console.error('[Scheduler] 🔄 Chromium tidak responsif — memicu restart client...');
+              onUnresponsive();
+              return; // stop processing batch ini, biar restart selesai dulu
+            }
+          }
+        }
       }
     }
   } catch (err) {
@@ -160,16 +188,24 @@ async function checkAndSendAlarms(client) {
 // ─────────────────────────────────────────────────
 //  Start scheduler
 // ─────────────────────────────────────────────────
-function startScheduler(client) {
+let schedulerStarted = false;
+
+function startScheduler(client, onUnresponsive) {
+  if (schedulerStarted) {
+    console.log('⏱️  Scheduler sudah aktif, skip re-registrasi.');
+    return;
+  }
+  schedulerStarted = true;
+
   // Jalankan setiap menit
   cron.schedule('* * * * *', () => {
-    checkAndSendAlarms(client);
+    checkAndSendAlarms(client, onUnresponsive);
   });
 
   console.log('⏱️  Scheduler aktif — cek alarm setiap 1 menit');
 
   // Langsung cek saat pertama kali bot ready
-  setTimeout(() => checkAndSendAlarms(client), 3000);
+  setTimeout(() => checkAndSendAlarms(client, onUnresponsive), 3000);
 }
 
 module.exports = { startScheduler };

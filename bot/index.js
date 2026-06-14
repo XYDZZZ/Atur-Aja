@@ -44,6 +44,43 @@ function cleanupChromiumLocks() {
 
 cleanupChromiumLocks();
 
+// ── Watchdog restart guard ──
+let isRestarting = false;
+
+/**
+ * Restart WhatsApp client (destroy + reinitialize) saat Chromium "hang".
+ * Sesi tetap tersimpan (LocalAuth + volume) — tidak perlu scan QR ulang.
+ */
+async function restartClient() {
+  if (isRestarting) return;
+  isRestarting = true;
+
+  console.log('\n🔄 Memulai restart WhatsApp client...\n');
+
+  try {
+    await client.destroy();
+  } catch (err) {
+    console.warn('⚠️  Error saat destroy client:', err.message);
+  }
+
+  // Bersihkan lock file sisa sebelum init ulang
+  cleanupChromiumLocks();
+
+  // Beri jeda sebentar sebelum re-init
+  await new Promise((r) => setTimeout(r, 3000));
+
+  try {
+    await client.initialize();
+    console.log('✅ Client berhasil di-restart.\n');
+  } catch (err) {
+    console.error('❌ Gagal restart client:', err.message);
+    console.error('Proses akan exit agar Railway restart container...');
+    process.exit(1);
+  } finally {
+    isRestarting = false;
+  }
+}
+
 // ─────────────────────────────────────────────────
 //  Inisialisasi Client
 // ─────────────────────────────────────────────────
@@ -127,7 +164,7 @@ client.on('ready', () => {
   console.log(`\nNomor bot: ${client.info.wid.user}`);
   console.log('Bot siap mengirim pengingat otomatis.\n');
 
-  startScheduler(client);
+  startScheduler(client, restartClient);
 });
 
 client.on('disconnected', (reason) => {
